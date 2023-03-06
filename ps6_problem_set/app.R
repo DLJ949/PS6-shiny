@@ -4,7 +4,7 @@ library(shiny)
 library(tidyverse)
 library(plotly)
 
-social_data <- read_delim("../WhatsgoodlyData-6.csv")
+social_data <- read_delim("WhatsgoodlyData-6.csv")
 
 # Data Cleaning
 social_data$`Number of Voters` <- floor(social_data$Count/social_data$Percentage)
