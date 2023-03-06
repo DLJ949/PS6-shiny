@@ -58,13 +58,22 @@ ui <- fluidPage(
     ),
     tabPanel(
       "Plot",
-      sidebarPanel(
-        wellPanel(
-          p("You can analyze how each demograhic viewed social media advertising
+      sidebarLayout(
+        sidebarPanel(
+          wellPanel(
+            p("You can analyze how each demograhic viewed social media advertising
             as having affected what they purchase. Each bar represents a specific
             social media platform (or NONE) and the y-axis represents the total
             number of users."),
-          
+            fluidRow(
+              uiOutput("uniqueDemographics")
+            )
+          )
+        ),
+        mainPanel(
+          wellPanel(
+            
+          )
         )
       )
     ),
@@ -109,10 +118,16 @@ server <- function(input, output) {
       sample_n(5)
   })
   
+  social_data %>% 
+    select(`Segment Description`) %>% 
+    unique() %>% 
+    arrange(`Segment Description`)
+  
   # Have the Plot UI show every unique demograhic in the data.
-  output$checkboxCut <- renderUI({
+  # unique(social_data$`Segment Description`)
+  output$uniqueDemographics <- renderUI({
     checkboxGroupInput("specification", "Select demographics",
-                       choices = unique(social_data$`Segment Description`))
+                       choices = sort(unique(social_data$`Segment Description`)))
   })
   
   # Proper way to implement changing color without changing random data points.
