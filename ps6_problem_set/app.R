@@ -2,6 +2,7 @@
 
 library(shiny)
 library(tidyverse)
+library(plotly)
 
 social_data <- read_delim("../WhatsgoodlyData-6.csv")
 
@@ -56,7 +57,16 @@ ui <- fluidPage(
       )
     ),
     tabPanel(
-      "Plot"
+      "Plot",
+      sidebarPanel(
+        wellPanel(
+          p("You can analyze how each demograhic viewed social media advertising
+            as having affected what they purchase. Each bar represents a specific
+            social media platform (or NONE) and the y-axis represents the total
+            number of users."),
+          
+        )
+      )
     ),
     tabPanel(
       "Table",
@@ -77,7 +87,7 @@ ui <- fluidPage(
       mainPanel(
         wellPanel(
           h2("Total Number of Responses for each Unique Answer"),
-             strong("(based on number of allowed voting demographics)"),
+             strong("(based on size of demographics)"),
           dataTableOutput("filteredData")
         )
       )
@@ -85,6 +95,7 @@ ui <- fluidPage(
   )
 )
 
+n_distinct(social_data$`Segment Type`)
 # Define server logic required to draw a histogram
 server <- function(input, output) {
   
@@ -96,6 +107,30 @@ server <- function(input, output) {
       filter(Count > 5) %>% 
       select(`Segment Description`, `Segment Type`, Answer, Count, Percentage) %>% 
       sample_n(5)
+  })
+  
+  # Have the Plot UI show every unique demograhic in the data.
+  output$checkboxCut <- renderUI({
+    checkboxGroupInput("specification", "Select demographics",
+                       choices = unique(social_data$`Segment Description`))
+  })
+  
+  # Proper way to implement changing color without changing random data points.
+  # sample is now a reactive function that runs this code when input changes
+  sample <- reactive({
+    # Using s1 allows for us to get around an Error if no diamond quality
+    # is selected.
+    s1 <- social_data %>% 
+      filter(`Segment Description` %in% input$specification)
+  })
+  
+  # Bar plot filtered by demographic categories for number of pollers who view
+  # a certain social media platform's ads influenced their purchases.
+  output$barPlot = renderPlotly({
+    plot_ly(data = sample(),
+            x = distinct(social_data$Answer), y = sum(unique(social_data$Count)),
+            marker = list(size = 10),
+            type = "bar")
   })
   
   # Filter the data so that statistics on which social medias had the most
