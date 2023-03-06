@@ -66,7 +66,13 @@ ui <- fluidPage(
             social media platform (or NONE) and the y-axis represents the total
             number of users."),
             fluidRow(
-              uiOutput("uniqueDemographics")
+              # Couldn't get a second button with an option to select all
+              # data working, nor a way to disable all the other buttons.
+              
+              # column(6, radioButtons("All", "Select All", choices = c("Off", "On"))),
+              # column(6, 
+               uiOutput("uniqueDemographics")
+              # )
             )
           )
         ),
@@ -139,15 +145,14 @@ server <- function(input, output) {
   # Want to plot the complete, unedited graph when nothing is selected,
   # then only data found in selected demographics if one or more are selected.
   
-  ################## DNF ########################
   ####    ALSO NEED TO UPLOAD TO SHINYAPP   #####
   
   output$barPlot = renderPlotly({
     
     manipulated_data <- social_data %>% 
-      select(Question, Answer, Count, `Number of Voters`) %>% 
+      select(Question, Answer, Count, `Segment Description`, `Number of Voters`) %>% 
       group_by(Answer) %>% 
-      # filter(`Segment Description` %in% input$specification) %>% 
+      filter(`Segment Description` %in% input$specification) %>% 
       summarise(total_votes = sum(unique(Count))) %>% 
       arrange(rank(desc(total_votes)))
     
