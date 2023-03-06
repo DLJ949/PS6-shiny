@@ -5,7 +5,10 @@ library(tidyverse)
 
 social_data <- read_delim("../WhatsgoodlyData-6.csv")
 
-n_distinct(social_data$`Segment Description`)
+# Data Cleaning
+social_data$`Number of Voters` <- floor(social_data$Count/social_data$Percentage)
+social_data$`Number of Voters` <- social_data$`Number of Voters` %>% 
+  replace(is.na(.), 0)
 
 # Define UI for application that draws a histogram
 ui <- fluidPage(
@@ -24,8 +27,10 @@ ui <- fluidPage(
         mainPanel(
           wellPanel(
             p("All participants were asked the same question:", 
-              em("What social platform has influenced your online shopping most?")),
-            p("Random small (5) sample of data collected:"),
+              strong(em("What social platform has influenced your online
+                        shopping most?"))),
+            p("Random (with more than 5 responses) small (5) sample of data
+              collected:"),
             dataTableOutput("randomSmallData")
           )
         ),
@@ -42,8 +47,8 @@ ui <- fluidPage(
                                                        has influenced your
                                                        online shopping most?'))),
             p(strong('Count'), "indicates how many of the ",
-              sum(social_data$Count), " responses were for this social media
-            platform and from this demographic."),
+              sum(social_data$Count), " total responses were for this social
+              media platform and from this demographic."),
             p(strong('Percentage'), "is the decimal percentage of participants from
               the specified demographic who agreed with this ", strong('Answer'))
           )
@@ -55,7 +60,27 @@ ui <- fluidPage(
     ),
     tabPanel(
       "Table",
-      dataTableOutput("filteredData")
+      sidebarPanel(
+        p("This panel displays the total number of votes a social media
+          platform received to the question: ", strong(em('What social platform
+                                                          has influenced your
+                                                          online shopping most?'))),
+        p("This slider influences which demographics, based on size, are included
+          into the total. This voter number is determined by how many responders
+          CLASSIFIED as being apart of a demographic, not how many in a
+          demographic responded for a certain platform."),
+        sliderInput(
+          "n", "Demographic needs to have at least THIS many voters",
+          0, max(social_data$`Number of Voters`) - 1, 5
+        )
+      ),
+      mainPanel(
+        wellPanel(
+          h2("Total Number of Responses for each Unique Answer"),
+             strong("(based on number of allowed voting demographics)"),
+          dataTableOutput("filteredData")
+        )
+      )
     )
   )
 )
@@ -74,11 +99,14 @@ server <- function(input, output) {
   })
   
   # Filter the data so that statistics on which social medias had the most
-  # influence on ad purchases display
+  # influence on ad purchases display. Allows for users to give input about
+  # at least now many votes should a categroy have before their votes are
+  # valid for the total.
   output$filteredData = renderDataTable({
     social_data %>% 
-      select(Question, Answer, Count) %>% 
+      select(Question, Answer, Count, `Number of Voters`) %>% 
       group_by(Answer) %>% 
+      filter(`Number of Voters` > input$n) %>% 
       summarise(total_votes = sum(unique(Count))) %>% 
       arrange(rank(desc(total_votes)))
   })
