@@ -72,7 +72,7 @@ ui <- fluidPage(
         ),
         mainPanel(
           wellPanel(
-            
+            plotlyOutput("barPlot")
           )
         )
       )
@@ -104,7 +104,8 @@ ui <- fluidPage(
   )
 )
 
-n_distinct(social_data$`Segment Type`)
+
+
 # Define server logic required to draw a histogram
 server <- function(input, output) {
   
@@ -118,11 +119,6 @@ server <- function(input, output) {
       sample_n(5)
   })
   
-  social_data %>% 
-    select(`Segment Description`) %>% 
-    unique() %>% 
-    arrange(`Segment Description`)
-  
   # Have the Plot UI show every unique demograhic in the data.
   # unique(social_data$`Segment Description`)
   output$uniqueDemographics <- renderUI({
@@ -130,10 +126,9 @@ server <- function(input, output) {
                        choices = sort(unique(social_data$`Segment Description`)))
   })
   
-  # Proper way to implement changing color without changing random data points.
-  # sample is now a reactive function that runs this code when input changes
+  # Proper way to implement changing demographics without errors.
   sample <- reactive({
-    # Using s1 allows for us to get around an Error if no diamond quality
+    # Using s1 allows for us to get around an Error if no demographic
     # is selected.
     s1 <- social_data %>% 
       filter(`Segment Description` %in% input$specification)
@@ -141,9 +136,24 @@ server <- function(input, output) {
   
   # Bar plot filtered by demographic categories for number of pollers who view
   # a certain social media platform's ads influenced their purchases.
+  # Want to plot the complete, unedited graph when nothing is selected,
+  # then only data found in selected demographics if one or more are selected.
+  
+  ################## DNF ########################
+  ####    ALSO NEED TO UPLOAD TO SHINYAPP   #####
+  
   output$barPlot = renderPlotly({
+    
+    manipulated_data <- social_data %>% 
+      select(Question, Answer, Count, `Number of Voters`) %>% 
+      group_by(Answer) %>% 
+      # filter(`Segment Description` %in% input$specification) %>% 
+      summarise(total_votes = sum(unique(Count))) %>% 
+      arrange(rank(desc(total_votes)))
+    
     plot_ly(data = sample(),
-            x = distinct(social_data$Answer), y = sum(unique(social_data$Count)),
+            x = manipulated_data$Answer,
+            y = manipulated_data$total_votes,
             marker = list(size = 10),
             type = "bar")
   })
