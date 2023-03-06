@@ -182,3 +182,6 @@ shinyApp(ui = ui, server = server)
 
 # LINK TO GITHUB REPOSATORY
 # https://github.com/DLJ949/ps6-shiny
+
+# Estimation for amount of time this problem set took:
+# I'd say around 9 hours.
