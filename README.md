@@ -9,3 +9,5 @@ There are three tabs in this Problem Set. The first tab, _About_, displays five 
 The second tab, _Plot_, is an interactive plot where the user can manipulate the 258 recorded demographics in the data and have specific demographics displayed in a bar plot. Responses only covered 5 possible answers: **Facebook, Twitter, Snapchat, Instagram, and None**.
 
 The third tab, _Table_, gives an interactive table where the user may see trends in how many total responses in the data are for certain social media platforms. As there are many different demographics of varying sizes within the data, they may manipulate the data by only having values given from "more reliable demographics" counted through adding a minimum demographic size through the slider to the left of the table.
+
+# **You can visit the app [here.](https://dlj949.shinyapps.io/Problem_Set_6_Shiny/?_ga=2.218667417.1659342050.1678098101-1103187277.1677538872)**
